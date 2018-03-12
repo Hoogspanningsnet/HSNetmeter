@@ -1,0 +1,348 @@
+<html>
+<head>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<script src="https://code.highcharts.com/stock/highstock.js"></script>
+	<script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+	<meta charset="utf-8" />
+	<link rel="icon" href="favicon.ico">
+	<title>Netfrequentie.nl - Grid frequency graph</title>
+</head>
+<body>
+	<div id="container" style="width:100%; height:100%; margin: 0 auto;"></div>
+	<script>
+	var myChart; // global
+	var lasttime = 0;
+	var meting = 10000;
+	var hoursback = 48;
+
+	// Extend Highcharts to show a bar at right side 
+	(function (H) {
+		var defaultOptions = H.getOptions(),
+	    	extendClass = H.extendClass,
+	    	merge = H.merge,
+	        seriesTypes = H.seriesTypes;
+		/**
+	     * The series type factory. This will be included in HC5.
+	     */
+	    H.seriesType = function (type, parent, options, props) {
+
+	        // Merge the options
+	        defaultOptions.plotOptions[type] = merge(
+	            defaultOptions.plotOptions[parent], 
+	            options
+	        );
+
+	        // Create the class
+	        seriesTypes[type] = extendClass(seriesTypes[parent], props);
+	    };
+	    
+	    H.seriesType('marker', 'scatter', null, {
+	    	drawPoints: function () {
+	        	var series = this,
+	            	chart = this.chart,
+	            	renderer = chart.renderer,
+	                method;
+	                
+	        	H.each(this.points, function (point) {
+	            
+	            	if (!point.graphic) {
+		            	point.graphic = renderer.g()
+	                    	.attr({
+	                        	zIndex: 9
+	                        })
+	                    	.add();                
+		             	point.line = renderer.path([
+	                    	'M', 0, 0, 
+		                    'L', chart.plotWidth - 2, 0,
+	                        'z'
+	                    ]).attr({
+	                    	'stroke-width': 1,
+	                        'stroke': 'red'
+	                    }).add(point.graphic);
+	                    point.wings = renderer.rect(-10, -10, chart.plotWidth + 20, 20, 5)
+	                    	.attr({
+	                        	fill: 'none',
+	                        	'stroke': 'gray',
+	                            'stroke-width': 2
+	                        })
+	                    	.add(point.graphic)
+	                    method = 'attr';
+	                } else {
+	                	method = 'animate';
+	                }
+	                
+	                point.graphic[method]({
+	                	translateX: chart.plotLeft,
+	                    translateY: chart.plotTop + point.plotY
+	                });
+	                
+	            });
+	        }
+	    })
+	}(Highcharts));
+	
+	/**
+	 * Request data from the server, add it to the graph and set a timeout 
+	 * to request again
+	 */
+	function requestRecentData() {
+		var wissen;
+		if (myChart.series[0].points[0].x < (new Date().getTime()-(48*3600*1000))) {
+			wissen = true;
+		} else {
+			wissen = false;
+		}
+	    $.ajax({
+	        url: 'live-freq-data.php?time='+lasttime+'&point='+meting,
+	        success: function(newData) {
+	    		var series = myChart.series[0];
+	            // add the point
+	            if (newData[0]['data'].length>0) {
+		            newData[0]['data'].forEach(function(punt) {
+	            		myChart.series[0].addPoint([punt[0],50+(0.0001*punt[1])], false);
+	            		if (wissen) {
+	            			myChart.series[0].removePoint(0, false);
+	            		}
+	            	});
+		            myChart.hideLoading();
+	            	myChart.redraw();
+		            lasttime = newData[0]['data'][newData[0]['data'].length-1][0];
+		        }
+//	            console.log("got data: "+teller+" records." );
+	        },
+	        cache: false
+	    });
+	}
+
+	function requestPrevData() {
+        this.credits.element.onclick = function() {
+            window.open('https://www.hoogspanningsnet.com/weten/stroomcursus/deel-5/', '_blank');
+        };
+
+		$.ajax({
+	        url: 'live-freq-data.php?point='+meting+'&hoursback='+hoursback,
+	        success: function(prevData) {
+	        	myChart.title.update({ text: 'Grid frequency from station ' + prevData[0]['station']});
+	        	myChart.subtitle.update({ text: '(measurements from last '+hoursback+' hours are downloaded, updates every 5 seconds)'});
+	        	
+	        	var series = myChart.series[0];
+	            // add the series
+	            prevData[0]['data'].forEach(function(punt) {
+	            	series.addPoint([punt[0],50+(0.0001*punt[1])], false);
+	            });
+	            myChart.hideLoading();
+	            myChart.redraw();
+	            lasttime = prevData[0]['data'][prevData[0]['data'].length-1][0];
+	            myChart.xAxis[0].setExtremes(lasttime-(15*60*1000),lasttime);
+	            // call it again after five seconds
+	    		counting = true;
+	        },
+	        cache: false
+	    });
+	}
+	
+	$(document).ready(function () { 
+		Highcharts.setOptions({
+		    global: {
+		        useUTC: false
+		    }
+		});
+		myChart = new Highcharts.stockChart('container', {
+	        chart: {
+	        	events: {
+	            	load: requestPrevData
+                },
+            },
+            plotOptions: {
+	        	line: {
+	        		connectNulls: false,
+	        	}
+	        },
+	        navigator: {
+				enabled: true,
+			    yAxis: {
+		            plotLines: [{
+		            	color: '#ccd6eb',
+	    	            value: 50,
+	        	        width: 1,
+	            	}],
+			    },
+			},	        
+            rangeSelector: {
+                inputEnabled: false,
+                floating: true,
+                buttonPosition: {x: 5, y: 5},
+                buttonTheme: {width: 40, height: 16},
+                buttons: [{
+                    type: 'second',
+                    count: 15,
+                    text: '15s',
+                }, {
+                    type: 'minute',
+                    count: 1,
+                    text: '1min',
+                }, {
+                    type: 'minute',
+                    count: 5,
+                    text: '5min',
+                }, {
+                    type: 'minute',
+                    count: 15,
+                    text: '15min',
+                }, {
+                    type: 'hour',
+                    count: 1,
+                    text: '1hr',
+                }, {
+                    type: 'hour',
+                    count: 6,
+                    text: '6hr',
+                }, {
+                    type: 'day',
+                    count: 1,
+                    text: '1day',
+               }, {
+                    type: 'all',
+                    text: 'All',
+                }],
+            },
+            title: {
+	            text: 'Grid frequency'
+	        },
+	        subtitle: {
+	        	 text: '(updates every 5 seconds)'
+	        },
+	        legend: {
+	            enabled: false
+	        },
+	        credits: {
+	            text: 'hoogspanningsnet.com',
+	        },
+	        xAxis: {
+	        	type: 'datetime',
+	        	ordinal: false,
+	        },
+	        yAxis: {
+	            title: {
+	                text: ' ',
+	                offset: 50,
+	            },
+	            labels: {
+	                format: '{value:.3f}',
+	            },
+	            plotBands:[ 
+	            	{ // mark the lower problem zone
+		                color: '#FF3333',
+		                from: 45.000,
+		                to: 49.800,
+		            },
+	            	{ // mark the upward dispatch high regulation zone
+	                	color: '#ff6600',
+	                	from: 49.800,
+	                	to: 49.850,
+	            	},
+	            	{ // mark the upward dispatch highmid regulation zone
+	                	color: '#ff9900',
+	                	from: 49.850,
+	                	to: 49.900,
+	            	},
+	            	{ // mark the upward dispatch lowmid regulation zone
+	                	color: '#ffff00',
+	                	from: 49.900,
+	                	to: 49.950,
+	            	},
+	            	{ // mark the upward dispatch low regulation zone
+	                	color: '#ccff66',
+	                	from: 49.950,
+	                	to: 49.980,
+	                },
+	            	{ // mark the deadband
+	                	color: '#99ff66',
+	                	from: 49.980,
+	                	to: 50.020,
+	            	},
+	            	{ // mark the donwqard dispatch low regulation zone
+	                	color: '#ccff66',
+	                	from: 50.020,
+	                	to: 50.050,
+	                },
+	            	{ // mark the upward dispatch lowmid regulation zone
+	                	color: '#ffff00',
+	                	from: 50.050,
+	                	to: 50.100,
+	            	},
+	            	{ // mark the upward dispatch highmid regulation zone
+	                	color: '#ff9900',
+	                	from: 50.100,
+	                	to: 50.150,
+	            	},
+	            	{ // mark the upward dispatch high regulation zone
+	                	color: '#ff6600',
+	                	from: 50.150,
+	                	to: 50.200,
+	            	},
+	            	{ // mark the upper problem zone
+		                color: '#FF3333',
+		                from: 50.200,
+		                to: 55.000,
+		            },
+		        ],
+	            plotLines: [{
+	            	color: 'black',
+	                value: 50.000,
+	                width: 2,
+	                zIndex: 1
+	            }],
+	        },
+	        tooltip: {
+                pointFormat: 'Frequency: {point.y:.3f} Hz',
+ 			},
+	        series: [{
+	            name: 'Frequency',
+	            turboThreshold: 500,
+	            data: [],
+	        	lineWidth: 1
+	        },{
+	            name: 'Setpoint',
+	            turboThreshold: 500,
+	            data: [],
+	        	lineWidth: 2
+	        }],
+	        plotOptions: {
+	            series: {
+	                states: {
+	                    hover: {
+	                        enabled: false,
+	                    }
+	                },
+	                dataGrouping: {
+	                	smoothed: false,
+	        		},
+	  			},
+	        },
+	    });
+		myChart.showLoading('<img src="spinnerbar.gif">');
+	});		
+
+	var counting = false;
+	this.setInterval(function() {
+		if(counting) { //only run if counting is true
+	    	requestRecentData();
+		}
+	}, 5000);
+
+	/* Other example */
+	$(window).focus(function() {
+		setTimeout(function(){ 
+			myChart.showLoading('<img src="spinnerbar.gif">');
+	    	requestRecentData();
+			counting = true;
+		}, 500);
+	});
+
+	$(window).blur(function() {
+	   counting = false;
+	});
+
+	</script>
+</body>
