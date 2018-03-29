@@ -16,7 +16,7 @@
 <layer number="20" name="Dimension" color="24" fill="1" visible="yes" active="yes"/>
 <layer number="21" name="tPlace" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="22" name="bPlace" color="7" fill="1" visible="yes" active="yes"/>
-<layer number="23" name="tOrigins" color="15" fill="1" visible="no" active="yes"/>
+<layer number="23" name="tOrigins" color="15" fill="1" visible="yes" active="yes"/>
 <layer number="24" name="bOrigins" color="15" fill="1" visible="yes" active="yes"/>
 <layer number="25" name="tNames" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="26" name="bNames" color="7" fill="1" visible="yes" active="yes"/>
@@ -1993,25 +1993,6 @@ CONN_20x2
 </package3d>
 </packages3d>
 </library>
-<library name="special" urn="urn:adsk.eagle:library:367">
-<description>&lt;b&gt;Special Devices&lt;/b&gt;&lt;p&gt;
-7-segment displays, switches, heatsinks, crystals, transformers, etc.&lt;p&gt;
-&lt;author&gt;Created by librarian@cadsoft.de&lt;/author&gt;</description>
-<packages>
-<package name="DRIL-2,5" urn="urn:adsk.eagle:footprint:26611/1" library_version="2">
-<description>&lt;b&gt;MARKER&lt;/b&gt; &lt;p&gt;
-drill 2.5 mm'</description>
-<wire x1="-1.778" y1="0" x2="0" y2="-1.778" width="2.1844" layer="27" curve="90" cap="flat"/>
-<wire x1="0" y1="1.778" x2="1.778" y2="0" width="2.1844" layer="27" curve="-90" cap="flat"/>
-<circle x="0" y="0" radius="0.635" width="0.4572" layer="51"/>
-<circle x="0" y="0" radius="2.921" width="0.1524" layer="21"/>
-<circle x="0" y="0" radius="3.175" width="0" layer="42"/>
-<circle x="0" y="0" radius="3.175" width="0" layer="43"/>
-<circle x="0" y="0" radius="3.175" width="0" layer="41"/>
-<hole x="0" y="0" drill="2.5"/>
-</package>
-</packages>
-</library>
 </libraries>
 <attributes>
 </attributes>
@@ -2279,7 +2260,6 @@ design rules under a new name.</description>
 <attribute name="OC_NEWARK" value="unknown" x="28.321" y="45.6565" size="1.778" layer="27" display="off"/>
 </element>
 <element name="J1" library="SparkFun-Connectors" library_urn="urn:adsk.eagle:library:513" package="2X20" package3d_urn="urn:adsk.eagle:package:38282/1" value="RASPBERRYPI-40-PIN-GPIO_PTH_NO_SHROUD" x="5.6515" y="73.2155"/>
-<element name="U$2" library="special" library_urn="urn:adsk.eagle:library:367" package="DRIL-2,5" value="" x="13.97" y="50.8"/>
 </elements>
 <signals>
 <signal name="N$12">
@@ -2422,6 +2402,14 @@ design rules under a new name.</description>
 <vertex x="3.048" y="40.3225"/>
 </polygon>
 <wire x1="10.284" y1="62.103" x2="7.62" y2="62.103" width="0.1524" layer="1"/>
+<wire x1="6.07" y1="51.22" x2="5.041" y2="51.22" width="0.1524" layer="1"/>
+<wire x1="5.041" y1="51.22" x2="4.445" y2="51.2445" width="0.1524" layer="1"/>
+<wire x1="4.445" y1="51.2445" x2="4.445" y2="54.61" width="0.1524" layer="1"/>
+<wire x1="4.445" y1="54.61" x2="5.0165" y2="55.118" width="0.1524" layer="1"/>
+<wire x1="5.0165" y1="55.118" x2="9.5885" y2="55.0545" width="0.1524" layer="1"/>
+<wire x1="9.5885" y1="55.0545" x2="10.287" y2="55.753" width="0.1524" layer="1"/>
+<wire x1="10.287" y1="55.753" x2="10.287" y2="62.1" width="0.1524" layer="1"/>
+<wire x1="10.287" y1="62.1" x2="10.284" y2="62.103" width="0.1524" layer="1"/>
 <contactref element="X1" pad="5"/>
 <contactref element="X1" pad="2"/>
 <contactref element="X1" pad="3"/>
@@ -2546,11 +2534,9 @@ design rules under a new name.</description>
 <contactref element="FB1" pad="1"/>
 <contactref element="C3" pad="1"/>
 <wire x1="17.4015" y1="62.103" x2="13.084" y2="62.103" width="0.1524" layer="1"/>
-<wire x1="13.084" y1="62.103" x2="13.081" y2="56.007" width="0.1524" layer="1"/>
-<wire x1="13.081" y1="56.007" x2="9.398" y2="52.2605" width="0.1524" layer="1"/>
-<wire x1="9.398" y1="52.2605" x2="9.401" y2="49.7235" width="0.1524" layer="1"/>
-<wire x1="8.294" y1="48.68" x2="6.07" y2="48.68" width="0.1524" layer="1"/>
-<wire x1="9.401" y1="49.7235" x2="8.294" y2="48.68" width="0.1524" layer="1"/>
+<wire x1="13.084" y1="62.103" x2="13.084" y2="52.708" width="0.1524" layer="1"/>
+<wire x1="9.056" y1="48.68" x2="6.07" y2="48.68" width="0.1524" layer="1"/>
+<wire x1="13.084" y1="52.708" x2="9.056" y2="48.68" width="0.1524" layer="1"/>
 <wire x1="29.972" y1="51.816" x2="27.559" y2="51.816" width="0.1524" layer="1"/>
 <wire x1="27.559" y1="51.816" x2="26.162" y2="51.816" width="0.1524" layer="1"/>
 <wire x1="26.162" y1="51.816" x2="26.0985" y2="51.8185" width="0.1524" layer="1"/>

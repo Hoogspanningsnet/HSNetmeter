@@ -1,0 +1,30 @@
+Partlist
+
+Exported from HSNetmeter-simple-v1.1.sch at 18-3-2018 19:18
+
+EAGLE Version 8.6.1 Copyright (c) 1988-2018 Autodesk, Inc.
+
+Assembly variant: 
+
+Part     Value                 Device       Package         Library         Sheet
+
++0V      LSP11                 LSP11        LSP11           solpad          1
++5V      LSP11                 LSP11        LSP11           solpad          1
+BATT     CH291-1220LF          CH291-1220LF CH291-1220LF    battery         1
+C1       100nF                 C-EUC0805    C0805           resistor        1
+C2       100nF                 C-EUC0805    C0805           resistor        1
+C3       10uF                  C-EUC1206    C1206           resistor        1
+F1       1206L110TH            1206L110TH   1206L           polyfuse-smd_10 1
+FB1      Ferrite               FERRITE0805  0805            microbuilder    1
+GPS      L80-M39               L80-M39      QUECTEL_L80-M39 L80-M39         1
+IC2      74HC132D              74HC132D     SO14            74xx-eu         1
+L        LSP11                 LSP11        LSP11           solpad          1
+LED1     GN                    LED3MM       LED3MM          led             1
+N        LSP11                 LSP11        LSP11           solpad          1
+OK1      LTV826S               LTV826S      DIL8-SMD        optocoupler     1
+R1       330 Ohm               R-EU_M0805   M0805           resistor        1
+R2       10kOhm                R-EU_M0805   M0805           resistor        1
+R3       10kOhm                R-EU_M0805   M0805           resistor        1
+R4       330 Ohm               R-EU_M0805   M0805           resistor        1
+SV1      2x20pin Female Header FE20-2       FE20-2          con-lsta        1
+X1       BU-SMC-V              BU-SMC-V     BU-SMC-V        con-coax        1
