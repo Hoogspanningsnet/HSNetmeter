@@ -34,7 +34,8 @@ def countingcallback(gpio, level, tick):
     sinecount += 1
     if sinecount == 8:
        pi.write(LED_PIN, 0)
-    if sinecount > 100:
+    if sinecount > 50:
+ #if sinecount > 100: #change to 50 for 50Hz pin
        freq = 50000000/(tick-firstuptick)
        if silent != 1:
           if expert == 1:
@@ -74,7 +75,8 @@ try:
    print("Starting frequency measurements, press ctrl-c to quit.\n")
    pi = pigpio.pi()
    pi.set_mode(LED_PIN, pigpio.OUTPUT)
-   cb = pi.callback(HONDERDHZ_PIN, pigpio.RISING_EDGE, countingcallback)
+   cb = pi.callback(VIJFTIGHZ_PIN, pigpio.RISING_EDGE, countingcallback)
+#cb = pi.callback(HONDERDHZ_PIN, pigpio.RISING_EDGE, countingcallback)
    while True:
       time.sleep(0.1)
 except KeyboardInterrupt:
