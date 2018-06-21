@@ -5,6 +5,9 @@ system("sudo pigpiod")
 import pigpio, time, datetime, sys, select, os, json
 import requests, copy
 
+#IMPORTANT : obtain an ID with the HSNet hardware coordinator (BaDu)
+ClientID = xxxxx 
+
 #define pins to use
 LED_PIN = 18
 VIJFTIGHZ_PIN = 24
@@ -16,7 +19,7 @@ firstuptick = 0
 def_volt = 230.0
 volt = 231
 def_freq = 50.0
-ClientID = 10000
+
 url = 'https://www.netfrequentie.nl/fmeting.php?t='
 emptypayload = {'clID': ClientID, 'meas':[]}
 maxpayloadlength = 10
