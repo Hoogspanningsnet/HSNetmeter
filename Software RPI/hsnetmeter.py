@@ -44,18 +44,18 @@ expert = args.verbose
 silent = args.silent
 
 def getserial():
-	# Extract serial from cpuinfo file
-	cpuserial = "0000000000000000"
-	try:
-		f = open('/proc/cpuinfo','r')
-		for line in f:
-		if line[0:6]=='Serial':
-			cpuserial = line[10:26]
-		f.close()
-	except:
-		cpuserial = "0000000000000000"
+    # Extract serial from cpuinfo file
+    cpuserial = "0000000000000000"
+    try:
+        f = open('/proc/cpuinfo','r')
+        for line in f:
+            if line[0:6] == 'Serial':
+                cpuserial = line[10:26]
+        f.close()
+    except:
+        cpuserial = "0000000000000000"
 
-	return cpuserial
+    return cpuserial
 
 def senddata(measuredFreq, measuredVolt, recordedTick):
 	global payload
