@@ -18,10 +18,10 @@ args = parser.parse_args()
 import os, pigpio
 
 if os.name != 'nt':
-	system("sudo pigpiod")
+    system("sudo pigpiod")
 
-import pigpio, time, datetime, sys, select, os, json
-import requests, copy, argparse
+    import pigpio, time, datetime, sys, select, os, json
+    import requests, copy, argparse
 
 #define pins to use
 LED_PIN = args.pin_led
@@ -51,110 +51,110 @@ def getserial():
         for line in f:
             if line[0:6] == 'Serial':
                 cpuserial = line[10:26]
-        f.close()
-    except:
-        cpuserial = "0000000000000000"
+                f.close()
+            except:
+                cpuserial = "0000000000000000"
 
-    return cpuserial
+                return cpuserial
 
-def senddata(measuredFreq, measuredVolt, recordedTick):
-	global payload
+                def senddata(measuredFreq, measuredVolt, recordedTick):
+                    global payload
 
-	if not silent and expert:
-		print (datetime.datetime.utcnow().strftime('%H:%M:%S:%f')
-			+ " - Frequentie: {0:.4f} Hz".format(measuredFreq)
-			+ ", Volt: {0:.4f} V".format(measuredVolt)
-			+ ", Tick: {0}".format(recordedTick))
+                    if not silent and expert:
+                        print (datetime.datetime.utcnow().strftime('%H:%M:%S:%f')
+                            + " - Frequentie: {0:.4f} Hz".format(measuredFreq)
+                            + ", Volt: {0:.4f} V".format(measuredVolt)
+                            + ", Tick: {0}".format(recordedTick))
 
-	payload['meas'].append({ 'freq': measuredFreq, 'volt': measuredVolt, 'utc': round(time.time(), 3) })
-	top10 = copy.deepcopy(payload)
-	if len(top10['meas']) >= maxpayloadlength:
-		top10['meas'] = top10['meas'][:maxpayloadlength]
-	try:
-		r = requests.post(url + str(recordedTick), data = json.dumps(top10), timeout = 0.15)
-		if r.status_code != 200:
-			r.raise_for_status()
-	except requests.exceptions.HTTPError as errh:
-		if not silent:
-			print (" - ERROR: HTTP error - Resultbuffer: ", len(payload['meas'])," ", str(errh).split(' ', 1)[0])
-	except requests.exceptions.ConnectionError:
-		if not silent:
-			print (" - ERROR: URL not found - Resultbuffer: ", len(payload['meas']))
-	except requests.exceptions.Timeout:
-		if not silent:
-			print (" - ERROR: Timeout - Resultbuffer: ", len(payload['meas']))
-	except requests.exceptions.RequestException as err:
-		if not silent:
-			print (" - ERROR: General error - Resultbuffer: ", len(payload['meas'])," ", err)
-	else:
-		if r.text.find('SUCCES') > -1:
-			payload['meas'] = payload['meas'][maxpayloadlength:]
-		if not silent and expert:
-			print (" -", r.text, "- Resultbuffer: ", len(payload['meas']))
+                        payload['meas'].append({ 'freq': measuredFreq, 'volt': measuredVolt, 'utc': round(time.time(), 3) })
+                        top10 = copy.deepcopy(payload)
+                        if len(top10['meas']) >= maxpayloadlength:
+                            top10['meas'] = top10['meas'][:maxpayloadlength]
+                            try:
+                                r = requests.post(url + str(recordedTick), data = json.dumps(top10), timeout = 0.15)
+                                if r.status_code != 200:
+                                    r.raise_for_status()
+                                except requests.exceptions.HTTPError as errh:
+                                    if not silent:
+                                        print (" - ERROR: HTTP error - Resultbuffer: ", len(payload['meas'])," ", str(errh).split(' ', 1)[0])
+                                    except requests.exceptions.ConnectionError:
+                                        if not silent:
+                                            print (" - ERROR: URL not found - Resultbuffer: ", len(payload['meas']))
+                                        except requests.exceptions.Timeout:
+                                            if not silent:
+                                                print (" - ERROR: Timeout - Resultbuffer: ", len(payload['meas']))
+                                            except requests.exceptions.RequestException as err:
+                                                if not silent:
+                                                    print (" - ERROR: General error - Resultbuffer: ", len(payload['meas'])," ", err)
+                                                else:
+                                                    if r.text.find('SUCCES') > -1:
+                                                        payload['meas'] = payload['meas'][maxpayloadlength:]
+                                                        if not silent and expert:
+                                                            print (" -", r.text, "- Resultbuffer: ", len(payload['meas']))
 
 #define callbackfunction for counting the sines
 def countingcallback(gpio, level, tick):
-	global firstuptick
-	global sinecount
+    global firstuptick
+    global sinecount
 
-	# Print timeout errors
-	if level == 2 and not silent and expert:
-		print (" - ERROR: Watchdog timeout")
+    # Print timeout errors
+    if level == 2 and not silent and expert:
+        print (" - ERROR: Watchdog timeout")
 
-	# Determine desired frequency
-	if gpio == VIJFTIGHZ_PIN:
-		desiredFreq = 50
-	elif gpio == HONDERDHZ_PIN:
-		desiredFreq = 100
-	else:
-		desiredFreq = 0
+    # Determine desired frequency
+    if gpio == VIJFTIGHZ_PIN:
+        desiredFreq = 50
+    elif gpio == HONDERDHZ_PIN:
+        desiredFreq = 100
+    else:
+        desiredFreq = 0
 
-	if sinecount == 0:
-		firstuptick = tick
+        if sinecount == 0:
+            firstuptick = tick
 
-	sinecount += 1
+            sinecount += 1
 
-	if sinecount == 8:
-		pi.write(LED_PIN, 0)
+            if sinecount == 8:
+                pi.write(LED_PIN, 0)
 
-	if sinecount > desiredFreq:
-		freq = (desiredFreq * 1000000) / (tick - firstuptick)
+                if sinecount > desiredFreq:
+                    freq = (desiredFreq * 1000000) / (tick - firstuptick)
 
-		sinecount = 1
-		firstuptick = tick
-		pi.write(LED_PIN, 1)
+                    sinecount = 1
+                    firstuptick = tick
+                    pi.write(LED_PIN, 1)
 
-		senddata(round((freq * 10000) - (def_freq * 10000)), round((volt * 10) - (def_volt * 10)), tick)
+                    senddata(round((freq * 10000) - (def_freq * 10000)), round((volt * 10) - (def_volt * 10)), tick)
 
 # Start the measurements
 cb = None
 pi = None
 try:
-	print ("Starting frequency measurements, press ctrl-c to quit.\n")
-	while True:
-		if pi is None or not pi.connected:
-			pi = pigpio.pi()
-			if not pi.connected:
-				time.sleep(5)
-				print ("Unable to connect, retrying...")
-				continue
+    print ("Starting frequency measurements, press ctrl-c to quit.\n")
+    while True:
+        if pi is None or not pi.connected:
+            pi = pigpio.pi()
+            if not pi.connected:
+                time.sleep(5)
+                print ("Unable to connect, retrying...")
+                continue
 
-			pi.set_mode(LED_PIN, pigpio.OUTPUT)
+                pi.set_mode(LED_PIN, pigpio.OUTPUT)
 
-			# Start correct callback
-			if args.mode == '50Hz':
-				cb = pi.callback(VIJFTIGHZ_PIN, pigpio.RISING_EDGE, countingcallback)
-			elif args.mode == '100Hz':
-				cb = pi.callback(HONDERDHZ_PIN, pigpio.RISING_EDGE, countingcallback)
+            # Start correct callback
+            if args.mode == '50Hz':
+                cb = pi.callback(VIJFTIGHZ_PIN, pigpio.RISING_EDGE, countingcallback)
+            elif args.mode == '100Hz':
+                cb = pi.callback(HONDERDHZ_PIN, pigpio.RISING_EDGE, countingcallback)
 
-		# Loop indefinitly
-		time.sleep(0.1)
+        # Loop indefinitly
+        time.sleep(0.1)
 
-except KeyboardInterrupt:
-	print ("\nFrequency measurement stopped through ctrl-c.")
+    except KeyboardInterrupt:
+        print ("\nFrequency measurement stopped through ctrl-c.")
 
-	if not cb is None:
-		cb.cancel()
+        if not cb is None:
+            cb.cancel()
 
-	pi.write(LED_PIN, 0)
-	pi.stop()
+            pi.write(LED_PIN, 0)
+            pi.stop()
