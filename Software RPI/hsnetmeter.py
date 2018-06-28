@@ -126,11 +126,11 @@ def countingcallback(gpio, level, tick):
     if sinecount > desiredFreq:
         freq = (desiredFreq * 1000000) / (tick - firstuptick)
 
-    sinecount = 1
-    firstuptick = tick
-    pi.write(LED_PIN, 1)
+        sinecount = 1
+        firstuptick = tick
+        pi.write(LED_PIN, 1)
 
-    senddata(round((freq * 10000) - (def_freq * 10000)), round((volt * 10) - (def_volt * 10)), tick)
+        senddata(round((freq * 10000) - (def_freq * 10000)), round((volt * 10) - (def_volt * 10)), tick)
 
 # Start the measurements
 cb = None
