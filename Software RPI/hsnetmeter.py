@@ -34,7 +34,7 @@ firstuptick = 0
 def_volt = 230.0
 volt = 231
 def_freq = 50.0
-freq = 0
+#freq = 0
 
 url = 'https://www.netfrequentie.nl/fmeting.php?t='
 emptypayload = {'clID': args.client, 'meas':[]}
@@ -71,7 +71,7 @@ def senddata(measuredFreq, measuredVolt, recordedTick):
     if len(top10['meas']) >= maxpayloadlength:
         top10['meas'] = top10['meas'][:maxpayloadlength]
     try:
-        r = requests.post(url + str(recordedTick), data = json.dumps(top10), timeout = 0.15)
+        r = requests.post(url + recordedTick, data = json.dumps(top10), timeout = 0.15)
         if r.status_code != 200:
             r.raise_for_status()
     except requests.exceptions.HTTPError as errh:
@@ -125,12 +125,10 @@ def countingcallback(gpio, level, tick):
 
     if sinecount > desiredFreq:
         freq = (desiredFreq * 1000000) / (tick - firstuptick)
-
         sinecount = 1
         firstuptick = tick
         pi.write(LED_PIN, 1)
-
-        senddata(round((freq * 10000) - (def_freq * 10000)), round((volt * 10) - (def_volt * 10)), tick)
+        senddata(round((freq * 10000) - (def_freq * 10000)), round((volt * 10) - (def_volt * 10)), str(tick))
 
 # Start the measurements
 cb = None
@@ -148,10 +146,11 @@ try:
         pi.set_mode(LED_PIN, pigpio.OUTPUT)
 
         # Start correct callback
-        if args.mode == '50Hz':
-            cb = pi.callback(VIJFTIGHZ_PIN, pigpio.RISING_EDGE, countingcallback)
-        elif args.mode == '100Hz':
-            cb = pi.callback(HONDERDHZ_PIN, pigpio.RISING_EDGE, countingcallback)
+        if cb is None:
+            if args.mode == '50Hz':
+                cb = pi.callback(VIJFTIGHZ_PIN, pigpio.RISING_EDGE, countingcallback)
+            elif args.mode == '100Hz':
+                cb = pi.callback(HONDERDHZ_PIN, pigpio.RISING_EDGE, countingcallback)
 
         # Loop indefinitly
         time.sleep(0.1)
