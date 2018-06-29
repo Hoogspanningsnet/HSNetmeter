@@ -9,6 +9,7 @@ parser.add_argument('--client', type = int, required = True, help = 'specify you
 parser.add_argument('--mode', choices = ['50Hz', '100Hz'], default = '50Hz', help = 'specify the mode to run in (default: 50Hz)')
 parser.add_argument('--silent', action = 'store_true', help = 'run in silent mode (default: false)')
 parser.add_argument('--verbose', action = 'store_true', help = 'run in verbose mode (default: false)')
+parser.add_argument('--disable-led', action = 'store_true', help = 'disable flashing led (default: false)')
 parser.add_argument('--pin-led', type = int, choices = range(0,31), default = 18, metavar = '{0-31}', help = 'specify the led-pin (default: 18)')
 parser.add_argument('--pin-50Hz', type = int, choices = range(0,31), default = 24, metavar = '{0-31}', help = 'specify the 50Hz-pin (default: 24)')
 parser.add_argument('--pin-100Hz', type = int, choices = range(0,31), default = 23, metavar = '{0-31}', help = 'specify the 100Hz-pin (default: 23)')
@@ -42,6 +43,7 @@ maxpayloadlength = 10
 payload = emptypayload
 expert = args.verbose
 silent = args.silent
+flashled = not args.disable_led
 
 def getserial():
     # Extract serial from cpuinfo file
@@ -120,7 +122,7 @@ def countingcallback(gpio, level, tick):
 
     sinecount += 1
 
-    if sinecount == 8:
+    if flashled and sinecount == 8:
         pi.write(LED_PIN, 0)
 
     if sinecount > desiredFreq:
@@ -128,7 +130,8 @@ def countingcallback(gpio, level, tick):
 
         sinecount = 1
         firstuptick = tick
-        pi.write(LED_PIN, 1)
+        if flashled:
+            pi.write(LED_PIN, 1)
         
         senddata(round((freq * 10000) - (def_freq * 10000)), round((volt * 10) - (def_volt * 10)), tick)
 
