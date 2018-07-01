@@ -22,7 +22,7 @@ import os, pigpio
 if os.name != 'nt':
     system("sudo pigpiod")
 
-import pigpio                                            , time, datetime, sys, select, os, json
+import pigpio, time, datetime, sys, select, os, json
 import requests, copy, argparse
 
 #define pins to use
