@@ -10,6 +10,7 @@ parser.add_argument('--mode', choices = ['50Hz', '100Hz'], default = '50Hz', hel
 parser.add_argument('--silent', action = 'store_true', help = 'run in silent mode (default: false)')
 parser.add_argument('--verbose', action = 'store_true', help = 'run in verbose mode (default: false)')
 parser.add_argument('--disable-led', action = 'store_true', help = 'disable flashing led (default: false)')
+parser.add_argument('--led-brightness', type = int, choices = range(0,101), default = 100, metavar = '{0-101}', help = 'specify the led brightness (default: 100)')
 parser.add_argument('--pin-led', type = int, choices = range(0,31), default = 18, metavar = '{0-31}', help = 'specify the led-pin (default: 18)')
 parser.add_argument('--pin-50Hz', type = int, choices = range(0,31), default = 24, metavar = '{0-31}', help = 'specify the 50Hz-pin (default: 24)')
 parser.add_argument('--pin-100Hz', type = int, choices = range(0,31), default = 23, metavar = '{0-31}', help = 'specify the 100Hz-pin (default: 23)')
@@ -21,7 +22,7 @@ import os, pigpio
 if os.name != 'nt':
     system("sudo pigpiod")
 
-import pigpio, time, datetime, sys, select, os, json
+import pigpio                                            , time, datetime, sys, select, os, json
 import requests, copy, argparse
 
 #define pins to use
@@ -36,6 +37,7 @@ def_volt = 230.0
 volt = 231
 def_freq = 50.0
 freq = 0
+ledbright = args.led_brightness
 
 url = 'https://www.netfrequentie.nl/fmeting.php?t='
 emptypayload = {'clID': args.client, 'meas':[]}
@@ -64,7 +66,7 @@ def senddata(measuredFreq, measuredVolt, recordedTick):
 
     if not silent and expert:
         print (datetime.datetime.utcnow().strftime('%H:%M:%S:%f')
-            + " - Frequentie: {0:.4f} Hz".format(measuredFreq)
+            + " - Frequentie: {0:.4f} Hz".format(def_freq+0.0001*measuredFreq)
             + ", Volt: {0:.4f} V".format(measuredVolt)
             + ", Tick: {0}".format(recordedTick))
 
@@ -123,7 +125,7 @@ def countingcallback(gpio, level, tick):
     sinecount += 1
 
     if flashled and sinecount == 8:
-        pi.write(LED_PIN, 0)
+        pi.write(LED_PIN, 0)    
 
     if sinecount > desiredFreq:
         freq = (desiredFreq * 1000000) / (tick - firstuptick)
@@ -131,7 +133,7 @@ def countingcallback(gpio, level, tick):
         sinecount = 1
         firstuptick = tick
         if flashled:
-            pi.write(LED_PIN, 1)
+            pi.set_PWM_dutycycle(LED_PIN, ledbright) 
         
         senddata(round((freq * 10000) - (def_freq * 10000)), round((volt * 10) - (def_volt * 10)), tick)
 
@@ -140,23 +142,26 @@ cb = None
 pi = None
 try:
     print ("Starting frequency measurements, press ctrl-c to quit.\n")
-    while True:
-        if pi is None or not pi.connected:
-            pi = pigpio.pi()
+
+    # first check to see of were connected to pigpiod else wait
+    while pi is None or not pi.connected:
+        pi = pigpio.pi()
         if not pi.connected:
             time.sleep(5)
             print ("Unable to connect, retrying...")
             continue
+    
+    #we are connected configure pins and other stuff
+    pi.set_mode(LED_PIN, pigpio.OUTPUT)
+    pi.set_PWM_range(LED_PIN, 100)  # now  25 1/4,   50 1/2,   75 3/4 on
+    # Start correct callback
+    if cb is None:
+        if args.mode == '50Hz':
+            cb = pi.callback(VIJFTIGHZ_PIN, pigpio.RISING_EDGE, countingcallback)
+        elif args.mode == '100Hz':
+            cb = pi.callback(HONDERDHZ_PIN, pigpio.RISING_EDGE, countingcallback)
 
-        pi.set_mode(LED_PIN, pigpio.OUTPUT)
-
-        # Start correct callback
-        if cb is None:
-            if args.mode == '50Hz':
-                cb = pi.callback(VIJFTIGHZ_PIN, pigpio.RISING_EDGE, countingcallback)
-            elif args.mode == '100Hz':
-                cb = pi.callback(HONDERDHZ_PIN, pigpio.RISING_EDGE, countingcallback)
-
+    while True:
         # Loop indefinitly
         time.sleep(0.1)
 
