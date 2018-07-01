@@ -143,32 +143,34 @@ pi = None
 try:
     print ("Starting frequency measurements, press ctrl-c to quit.\n")
 
-    # first check to see of were connected to pigpiod else wait
-    while pi is None or not pi.connected:
-        pi = pigpio.pi()
-        if not pi.connected:
-            time.sleep(5)
-            print ("Unable to connect, retrying...")
-            continue
-    
-    #we are connected configure pins and other stuff
-    pi.set_mode(LED_PIN, pigpio.OUTPUT)
-    pi.set_PWM_range(LED_PIN, 100)  # now  25 1/4,   50 1/2,   75 3/4 on
-    # Start correct callback
-    if cb is None:
-        if args.mode == '50Hz':
-            cb = pi.callback(VIJFTIGHZ_PIN, pigpio.RISING_EDGE, countingcallback)
-        elif args.mode == '100Hz':
-            cb = pi.callback(HONDERDHZ_PIN, pigpio.RISING_EDGE, countingcallback)
-
+    # MAIN LOOP
     while True:
-        # Loop indefinitly
-        time.sleep(0.1)
-
+        if pi is None or not pi.connected:
+            pi = pigpio.pi() 
+            if pi.connected:
+                print("Connected to pigpio-deamon")
+                #we are connected configure pins and other stuff
+                pi.set_mode(LED_PIN, pigpio.OUTPUT)
+                pi.set_PWM_range(LED_PIN, 100)  # now  25 1/4,   50 1/2,   75 3/4 on
+                # Start correct callback
+                if cb is None:
+                    if args.mode == '50Hz':
+                        cb = pi.callback(VIJFTIGHZ_PIN, pigpio.RISING_EDGE, countingcallback)
+                        print("Using 50Hz pin to measure frequency.")
+                    elif args.mode == '100Hz':
+                        cb = pi.callback(HONDERDHZ_PIN, pigpio.RISING_EDGE, countingcallback)
+                        print("Using 100Hz pin to measure frequency.")
+                while pi.connected:
+                    time.sleep(0.1)
+            else:    
+                print ("Not connected to pigpio deamon, retrying...")
+                time.sleep(5)
+                continue
+            
 except KeyboardInterrupt:
     print ("\nFrequency measurement stopped through ctrl-c.")
 
-    if not cb is None:
+    if not cb is None: 
         cb.cancel()
 
     pi.write(LED_PIN, 0)
