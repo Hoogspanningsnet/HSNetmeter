@@ -34,7 +34,7 @@ connected = set()
 counter = 0
 
 async def socketloop(websocket, path):
-    print ("websocket connected")
+    print ("websocket connected: '{}:{}'".format(*websocket.remote_address))
     connected.add(websocket)
     try:
         while True:
@@ -42,9 +42,8 @@ async def socketloop(websocket, path):
             await websocket.send(message)
             freq_queue.async_q.task_done()
     except websockets.exceptions.ConnectionClosed:
-        print ("websocket closed")
+        print ("websocket closed: '{}:{}".format(*websocket.remote_address))
     finally:
-        print ("websocket left")
         connected.remove(websocket)
         freq_queue.async_q.task_done()
 
