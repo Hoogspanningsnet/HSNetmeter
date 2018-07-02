@@ -31,6 +31,71 @@
 					type: 'datetime',
 					ordinal: false,
 				},
+				yAxis: {
+					labels: {
+						format: '{value:.3f}',
+					},
+					plotBands:[ 
+						{ // mark the lower problem zone
+							color: '#FF3333',
+							from: 45.000,
+							to: 49.800,
+						},
+						{ // mark the upward dispatch high regulation zone
+							color: '#ff6600',
+							from: 49.800,
+							to: 49.850,
+						},
+						{ // mark the upward dispatch highmid regulation zone
+							color: '#ff9900',
+							from: 49.850,
+							to: 49.900,
+						},
+						{ // mark the upward dispatch lowmid regulation zone
+							color: '#ffff00',
+							from: 49.900,
+							to: 49.950,
+						},
+						{ // mark the upward dispatch low regulation zone
+							color: '#ccff66',
+							from: 49.950,
+							to: 49.980,
+						},
+						{ // mark the deadband
+							color: '#99ff66',
+							from: 49.980,
+							to: 50.020,
+						},
+						{ // mark the donwqard dispatch low regulation zone
+							color: '#ccff66',
+							from: 50.020,
+							to: 50.050,
+						},
+						{ // mark the upward dispatch lowmid regulation zone
+							color: '#ffff00',
+							from: 50.050,
+							to: 50.100,
+						},
+						{ // mark the upward dispatch highmid regulation zone
+							color: '#ff9900',
+							from: 50.100,
+							to: 50.150,
+						},
+						{ // mark the upward dispatch high regulation zone
+							color: '#ff6600',
+							from: 50.150,
+							to: 50.200,
+						},
+						{ // mark the upper problem zone
+							color: '#FF3333',
+							from: 50.200,
+							to: 55.000,
+						},
+					],
+				},
+				tooltip: {
+					pointFormat: 'Frequency: {point.y:.3f} Hz',
+				},
 				series: [{
 					name: 'Frequency',
 					turboThreshold: 500,
