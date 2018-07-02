@@ -15,7 +15,7 @@ parser.add_argument('--pin-100Hz', type = int, choices = range(0,31), default = 
 args = parser.parse_args()
 
 import pigpio, time, datetime, json
-import asyncio, websockets, janus
+import socket, asyncio, websockets, janus
 
 #define pins to use
 LED_PIN = args.pin_led
@@ -101,7 +101,9 @@ try:
             cb = pi.callback(HONDERDHZ_PIN, pigpio.RISING_EDGE, countingcallback)
 
     # Loop indefinitly
-    loop.run_until_complete(websockets.serve(socketloop, '192.168.0.29', 6789))
+    hostname = '192.168.0.29' #socket.getfqdn()
+    print ("websocket opened at: " + hostname)
+    loop.run_until_complete(websockets.serve(socketloop, hostname, 6789))
     loop.run_forever() 
 
 except KeyboardInterrupt:
