@@ -1,0 +1,55 @@
+<html>
+<head>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<script src="https://code.highcharts.com/stock/highstock.js"></script>
+	<script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+	<meta charset="utf-8" />
+	<link rel="icon" href="favicon.ico">
+	<title>Netfrequentie.nl - Grid frequency graph</title>
+</head>
+<body>
+	<div id="container" style="width:100%; height:100%; margin: 0 auto;"></div>
+	<script>
+		$(document).ready(function () { 
+			Highcharts.setOptions({
+				global: {
+					useUTC: false
+				}
+			});
+			var chart = new Highcharts.stockChart('container', {
+				navigator: {
+					enabled: true,
+					yAxis: {
+						plotLines: [{
+							color: '#ccd6eb',
+							value: 50,
+							width: 1,
+						}],
+					},
+				},
+				xAxis: {
+					type: 'datetime',
+					ordinal: false,
+				},
+				series: [{
+					name: 'Frequency',
+					turboThreshold: 500,
+					data: [],
+					lineWidth: 2
+				}]
+			});
+
+			var offset = new Date().getTimezoneOffset();
+			var socket = new WebSocket("ws://192.168.0.29:6789/");
+			socket.onopen = function(event) { console.log("connected"); };
+			socket.onmessage = function(event) {
+				var data = JSON.parse(event.data);
+				var series = chart.series[0];
+				var shift = series.data.length > 7500; // 5min worth of data
+				series.addPoint([ (data.tick + offset) * 1000, data.freq ], true, shift, false);
+			};
+			socket.onerror = function (event) { console.log("disconnected"); };
+		});
+	</script>
+</body>
+</html>
