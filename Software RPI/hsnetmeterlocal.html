@@ -105,13 +105,14 @@
 			});
 
 			var offset = new Date().getTimezoneOffset();
-			var socket = new WebSocket("ws://192.168.0.29:6789/");
+			console.log('offset: ',offset);
+			var socket = new WebSocket("ws://192.168.2.2:6789/");
 			socket.onopen = function(event) { console.log("connected"); };
 			socket.onmessage = function(event) {
 				var data = JSON.parse(event.data);
 				var series = chart.series[0];
-				var shift = series.data.length > 7500; // 5min worth of data
-				series.addPoint([ (data.tick + offset) * 1000, data.freq ], true, shift, false);
+				var shift = series.options.data.length > 1000;
+				series.addPoint([ (data.tick) * 1000, data.freq ], true, shift, false);
 			};
 			socket.onerror = function (event) { console.log("disconnected"); };
 		});
