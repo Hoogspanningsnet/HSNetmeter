@@ -2,6 +2,7 @@
 <head>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 	<script src="https://code.highcharts.com/stock/highstock.js"></script>
+	<script src="https://code.highcharts.com/modules/boost.js"></script>
 	<script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
 	<meta charset="utf-8" />
 	<link rel="icon" href="favicon.ico">
@@ -12,29 +13,27 @@
 	<script>
 		$(document).ready(function () { 
 			Highcharts.setOptions({
-				global: {
-					useUTC: false
-				}
+				global: { useUTC: false }
 			});
 			var chart = new Highcharts.stockChart('container', {
+				boost: { useGPUTranslations: true },
 				navigator: {
 					enabled: true,
 					yAxis: {
 						plotLines: [{
 							color: '#ccd6eb',
 							value: 50,
-							width: 1,
-						}],
+							width: 1
+						}]
 					},
+					series: { marker: { enabled: false } }
 				},
 				xAxis: {
 					type: 'datetime',
-					ordinal: false,
+					ordinal: false
 				},
 				yAxis: {
-					labels: {
-						format: '{value:.3f}',
-					},
+					labels: { format: '{value:.3f}' },
 					plotBands:[ 
 						{ // mark the lower problem zone
 							color: '#FF3333',
@@ -98,21 +97,43 @@
 				},
 				series: [{
 					name: 'Frequency',
-					turboThreshold: 500,
 					data: [],
 					lineWidth: 2
-				}]
+				}],
+				plotOptions: {
+					line: { marker: { enabled: false } }
+				},
+				legend: { enabled: false },
+				rangeSelector: {
+					enabled: true,
+					floating: true,
+					buttonPosition: { x: 5, y: 5 },
+					buttonTheme: { width: 40, height: 16 },
+					buttons: [
+						{ type: 'second', count: 15, text:   '15s' },
+						{ type: 'second', count: 30, text:   '30s' },
+						{ type: 'minute', count:  1, text:  '1min' },
+						{ type: 'minute', count:  2, text:  '2min' },
+						{ type: 'minute', count:  5, text:  '5min' },
+						{ type: 'minute', count: 10, text: '10min' }
+					]
+				}
 			});
 
-			var offset = new Date().getTimezoneOffset();
-			console.log('offset: ',offset);
-			var socket = new WebSocket("ws://192.168.2.2:6789/");
+			var buffer = [];
+			const buffersize = 5;
+			const socket = new WebSocket("ws://192.168.0.29:6789/");
 			socket.onopen = function(event) { console.log("connected"); };
 			socket.onmessage = function(event) {
 				var data = JSON.parse(event.data);
-				var series = chart.series[0];
-				var shift = series.options.data.length > 1000;
-				series.addPoint([ (data.tick) * 1000, data.freq ], true, shift, false);
+				buffer.push([ data.tick * 1000, data.freq ]);
+				if (buffer.length >= buffersize) {
+					var series = chart.series[0];
+					var shift = series.options.data.length > 10000;
+					while (buffer.length > 0) {
+						series.addPoint(buffer.shift(), buffer.length == 0, shift, false);
+					}
+				}
 			};
 			socket.onerror = function (event) { console.log("disconnected"); };
 		});
