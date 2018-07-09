@@ -122,7 +122,7 @@
 
 			var buffer = [];
 			const buffersize = 5;
-			const socket = new WebSocket("ws://192.168.0.29:6789/");
+			const socket = new WebSocket("ws://" + location.hostname + ":6789/");
 			socket.onopen = function(event) { console.log("connected"); };
 			socket.onmessage = function(event) {
 				var data = JSON.parse(event.data);

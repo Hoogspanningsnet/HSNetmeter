@@ -101,9 +101,9 @@ try:
             cb = pi.callback(HONDERDHZ_PIN, pigpio.RISING_EDGE, countingcallback)
 
     # Loop indefinitly
-    hostname = '192.168.2.2' #socket.getfqdn()
-    print ("websocket opened at: " + hostname)
-    loop.run_until_complete(websockets.serve(socketloop, hostname, 6789))
+    hostname = socket.getfqdn()
+    print ("websocket opened at: " + hostname + ":6789")
+    loop.run_until_complete(websockets.serve(socketloop, None, 6789))
     loop.run_forever() 
 
 except KeyboardInterrupt:
