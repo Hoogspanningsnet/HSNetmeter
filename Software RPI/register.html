@@ -1,0 +1,71 @@
+<html>
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://code.highcharts.com/stock/highstock.js"></script>
+    <script src="https://code.highcharts.com/modules/boost.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+    <meta charset="utf-8" />
+    <link rel="icon" href="favicon.ico">
+    <title>Netfrequentie.nl - Registration</title>
+    <style>
+    html, body {
+        height: 100%;
+    }
+    html {
+        display: table;
+        margin: auto;
+    }
+    body {
+        display: table-cell;
+        vertical-align: middle;
+    }
+    h1 {
+        margin-left: 20px;
+    }
+    fieldset {
+        padding: 20px;
+        margin: 20px;
+        width: 400px;
+    }
+    legend {
+        font-size: 14pt;
+        font-weight: bold;
+    }
+    .left {
+        display: inline-block;
+        width: 150px;
+    }
+    input[type="text"] {
+        width: 200px;
+    }
+    input[type="submit"] {
+        width: 200px;
+    }
+    </style>
+</head>
+<body>
+    <h1>Registration form</h1>
+    <form>
+        <fieldset>
+            <legend>Station</legend>
+            <div class="left">Name:</div><input type="text" id="stationname"/><br/>
+            <div class="left">Latitude:</div><input type="text" id="latitude"/><br/>
+            <div class="left">Longitude:</div><input type="text" id="longitude"/><br/>
+            <div class="left">Town:</div><input type="text" id="town"/><br/>
+            <div class="left">Country:</div><input type="text" id="country"/>
+            <div class="left">HV-substation:</div><input type="text" id="hvsubstation"/>
+        </fieldset>
+
+        <fieldset>
+            <legend>Owner</legend>
+            <div class="left">Nickname:</div><input type="text" id="nickname"/><br/>
+            <div class="left">Firstname:</div><input type="text" id="firstname"/><br/>
+            <div class="left">Lastname:</div><input type="text" id="lastname"/>
+        </fieldset>
+
+        <fieldset>
+            <div class="left"></div><input type="submit" value="Send" />
+        </fieldset>
+    </form>
+</body>
+</html>
