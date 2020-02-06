@@ -125,7 +125,7 @@ def countingcallback(gpio, level, tick):
     sinecount += 1
 
     if flashled and sinecount == 8:
-        pi.write(LED_PIN, 0)    
+        pi.write(LED_PIN, 0)
 
     if sinecount > desiredFreq:
         freq = (desiredFreq * 1000000) / (tick - firstuptick)
@@ -133,8 +133,8 @@ def countingcallback(gpio, level, tick):
         sinecount = 1
         firstuptick = tick
         if flashled:
-            pi.set_PWM_dutycycle(LED_PIN, ledbright) 
-        
+            pi.set_PWM_dutycycle(LED_PIN, ledbright)
+
         senddata(round((freq * 10000) - (def_freq * 10000)), round((volt * 10) - (def_volt * 10)), tick)
 
 # Start the measurements
