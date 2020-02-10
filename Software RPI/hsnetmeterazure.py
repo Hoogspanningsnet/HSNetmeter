@@ -39,7 +39,7 @@ desiredVolt = 230.0
 volt = 231
 
 # Setup variables
-url = 'https://www.netfrequentie.nl/fmeting.php'
+url = 'https://www.netfrequentie.nl/fmeting.php?t='
 payload = { 'clID': args.client, 'meas': [] }
 
 # Setup flags
@@ -67,7 +67,7 @@ def queuedata(desiredFreq, measuredFreq, measuredVolt, recordedTick):
         # Send if 10 in queue
         json_data = json.dumps(payload)
         senddata_azure(json_data)
-        senddata_web(json_data)
+        senddata_web(json_data, recordedTick)
 
         # Empty queue
         payload['meas'].clear()
@@ -77,35 +77,37 @@ def senddata_azure(json_data):
     global azure_client
     if not azure:
         return
-    azure_client.send_message(json_data)
 
-def senddata_web(json_data):
+    try:
+        azure_client.send_message(json_data)
+    except:
+        if not args.silent:
+            print (datetime.datetime.utcnow().strftime('%H:%M:%S:%f')
+                + " - ERROR: Azure upload failed.")
+
+def senddata_web(json_data, recordedTick):
     if not web:
         return
     try:
-        r = requests.post(url, data = json_data, timeout = 0.15)
+        r = requests.post(url + str(recordedTick), data = json_data, timeout = 0.15)
         if r.status_code != 200:
             r.raise_for_status()
     except requests.exceptions.HTTPError as errh:
         if not args.silent:
             print (datetime.datetime.utcnow().strftime('%H:%M:%S:%f')
-                + " - ERROR: HTTP error - Resultbuffer: ", len(json_data['meas'])," ", str(errh).split(' ', 1)[0])
+                + " - ERROR: HTTP error - ", str(errh).split(' ', 1)[0])
     except requests.exceptions.ConnectionError:
         if not args.silent:
             print (datetime.datetime.utcnow().strftime('%H:%M:%S:%f')
-                + " - ERROR: URL not found - Resultbuffer: ", len(json_data['meas']))
+                + " - ERROR: URL not found")
     except requests.exceptions.Timeout:
         if not args.silent:
             print (datetime.datetime.utcnow().strftime('%H:%M:%S:%f')
-                + " - ERROR: Timeout - Resultbuffer: ", len(json_data['meas']))
+                + " - ERROR: Timeout")
     except requests.exceptions.RequestException as err:
         if not args.silent:
             print (datetime.datetime.utcnow().strftime('%H:%M:%S:%f')
-                + " - ERROR: General error - Resultbuffer: ", len(json_data['meas'])," ", err)
-    else:
-        if not args.silent and args.verbose:
-            print (datetime.datetime.utcnow().strftime('%H:%M:%S:%f')
-                + " -", r.text, "- Resultbuffer: ", len(payload['meas']))
+                + " - ERROR: General error - ", err)
 
 # Define callbackfunction for counting the sines
 def countingcallback(gpio, level, tick):
